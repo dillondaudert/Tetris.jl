@@ -10,6 +10,8 @@ The various entities in Tetris might be the following:
 - A `tetromino`, which is a meta entity containing 4 `cell`s. It has an identity (like `L`)
     which determines cell color and how the cells move together when translated/rotated.
 - The `score`, which displays the player's current score.
+- The `ghost tetromino` which displays where the active tetromino will end up if it 
+    completes its fall.
 
 ## Components
 - A `PositionComponent`, which encodes a location (x, y) on the game board.
@@ -18,6 +20,9 @@ The various entities in Tetris might be the following:
 - Some way to identify the 'active' tetramino (4 cells) controllable by the player
 
 ## Systems
-- `InputSystem` - converts user input to manipulate the active tetromino
-- `MovementSystem` - update the position of 
-- A system which checks the inactive cells for complete lines and deletes lines; scores
+- `InputSystem` - converts user input to actions that manipulate the active tetromino
+- `MovementSystem` - update the position of the active tetromino based on user actions
+- `FallingSystem` - periodically (based on a variable timestep; difficulty) move the 
+    active tetromino down 1 row
+- A system which checks the inactive cells for complete lines and deletes lines
+- `ScoringSystem` - updates the score based on line completion events
