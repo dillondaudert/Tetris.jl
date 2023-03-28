@@ -10,6 +10,11 @@
 Move a tetromino in a given direction (translation) or rotate it (rotation).
 This needs to know the state of the board to determine if a move is valid, as well as
 the current position and orientation of the tetromino.
+
+This should implement the SRS (Super Rotation System) required for tetris.
+
+Given a board and a tetromino, attempt to move or rotate the tetromino. This function
+should return a new tetromino with the new position and orientation, or the old tetromino.
 """
 function move_tetromino end
 

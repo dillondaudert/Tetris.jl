@@ -1,5 +1,8 @@
 module Tetris
 
+using SimpleDirectMediaLayer
+using SimpleDirectMediaLayer.LibSDL2
+
 # game description:
 # 1. the game is played on a 10x20 grid
 # 2. a random tetromino is generated at the top of the grid
@@ -12,6 +15,10 @@ module Tetris
 # rule: the game must guarantee the player never receives more than four 'S' and 'Z' pieces in a row.
 # scoring: single line: 100 points, double line: 300 points, triple line: 500 points, tetris: 800 points
 #          back-to-back tetris: 1200 points
+
+include("tetrominos.jl")
+include("game.jl")
+include("engine.jl")
 
 
 end 
