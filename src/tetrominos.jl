@@ -107,15 +107,48 @@ get_cells(t::T{Left}) = (t.origin,) .+ (Point2(0, 1), Point2(1, 0), Point2(1, 1)
 # TODO: Test these in the test suite - each tetromino, orientation, rotation combination (7 * 8)
 const KICK_DATA = Dict(
     # I tetromino has special rules
-    (:I, :Up, :clockwise) => ((0, 0), (-2, 0), (1, 0), (-2, 1), (1, -2)),
-    (:I, :Right, :clockwise) => ((0, 0), (-1, 0), (2, 0), (-1, -2), (2, 1)),
-    (:I, :Down, :clockwise) => ((0, 0), (2, 0), (-1, 0), (2, -1), (-1, 2)),
-    (:I, :Left, :clockwise) => ((0, 0), (1, 0), (-2, 0), (1, 2), (-2, -1)),
+    (:I, :Up, :clockwise) => Vec2.((0, 0), (-2, 0), (1, 0), (-2, 1), (1, -2)),
+    (:I, :Right, :clockwise) => Vec2.((0, 0), (-1, 0), (2, 0), (-1, -2), (2, 1)),
+    (:I, :Down, :clockwise) => Vec2.((0, 0), (2, 0), (-1, 0), (2, -1), (-1, 2)),
+    (:I, :Left, :clockwise) => Vec2.((0, 0), (1, 0), (-2, 0), (1, 2), (-2, -1)),
     # all other tetrominos use the same data
-    (:T, :Up, :clockwise) => ((0, 0), (-1, 0), (-1, -1), (0, 2), (-1, 2)),
-    (:T, :Right, :clockwise) => ((0, 0), (1, 0), (1, 1), (0, -2), (1, -2)),
-    (:T, :Down, :clockwise) => ((0, 0), (1, 0), (1, -1), (0, 2), (1, 2)),
-    (:T, :Left, :clockwise) => ((0, 0), (-1, 0), (-1, 1), (0, -2), (-1, -2))
+    (:T, :Up, :clockwise) => Vec2.((0, 0), (-1, 0), (-1, -1), (0, 2), (-1, 2)),
+    (:T, :Right, :clockwise) => Vec2.((0, 0), (1, 0), (1, 1), (0, -2), (1, -2)),
+    (:T, :Down, :clockwise) => Vec2.((0, 0), (1, 0), (1, -1), (0, 2), (1, 2)),
+    (:T, :Left, :clockwise) => Vec2.((0, 0), (-1, 0), (-1, 1), (0, -2), (-1, -2))
 )
+
+# helper functions for orientations
+_rotate_orientation(::Type{Up}, ::Val{:clockwise}) = Right
+_rotate_orientation(::Type{Right}, ::Val{:clockwise}) = Down
+_rotate_orientation(::Type{Down}, ::Val{:clockwise}) = Left
+_rotate_orientation(::Type{Left}, ::Val{:clockwise}) = Up
+_rotate_orientation(::Type{Up}, ::Val{:counterclockwise}) = Left
+_rotate_orientation(::Type{Right}, ::Val{:counterclockwise}) = Up
+_rotate_orientation(::Type{Down}, ::Val{:counterclockwise}) = Right
+_rotate_orientation(::Type{Left}, ::Val{:counterclockwise}) = Down
+
+function get_kicks(::I{Q}, ::Val{:clockwise}) where {Q <: Orientation}
+    return KICK_DATA[(:I, Symbol(Q), :clockwise)]
+end
+
+function get_kicks(::T, ::Val{:clockwise}) where {Q, T <: Tetromino{Q}}
+    return KICK_DATA[(:T, Symbol(Q), :clockwise)]
+end
+
+# TODO: Test counterclockwise
+function get_kicks(::I{Q}, rot::Val{:counterclockwise}) where {Q <: Orientation}
+    # get the clockwise kick data for the destination orientation
+    kick_data = KICK_DATA[(:I, Symbol(_rotate_orientation(Q, rot)), :clockwise)]
+    # reverse the x and y coordinates
+    return (-1) .* kick_data 
+end
+
+function get_kicks(::T, rot::Val{:counterclockwise}) where {Q, T <: Tetromino{Q}}
+    # get the clockwise kick data for the destination orientation
+    kick_data = KICK_DATA[(:T, Symbol(_rotate_orientation(Q, rot)), :clockwise)]
+    # reverse the x and y coordinates
+    return (-1) .* kick_data 
+end
 
 end # module
