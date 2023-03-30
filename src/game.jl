@@ -18,6 +18,22 @@ should return a new tetromino with the new position and orientation, or the old 
 """
 function move_tetromino end
 
+# try to translate the tetromino; returns a new Tetromino instance with updated (or same) origin
+function move_tetromino(board::TetrisBoard, tetromino, ::Translation) end
+
+# try to rotate the tetromino; returns a new Tetromino instance with updated (or same) orientation
+function move_tetromino(board::TetrisBoard, tetromino, rot::R) where {R <: Union{::Val{:clockwise}, ::Val{:counterclockwise}}} 
+    # SRS attempts to rotate using "wall kicks". 
+
+    for kick in get_kicks(tetromino, rot)
+        new_tetromino = translate(rotate(tetromino, rot), kick)
+        if is_valid_position(board, new_tetromino)
+            return new_tetromino
+        end
+    end
+    return tetromino
+end
+
 
 """
     get_next_tetromino
@@ -30,7 +46,7 @@ function get_next_tetromino end
 ##### GAME REPRESENTATION #####
 
 struct TetrisBoard
-    # ...
+    grid::Array{Bool, 2} # grid of cells representing occupancy of the board
 end
 
 # how should we represent the board?

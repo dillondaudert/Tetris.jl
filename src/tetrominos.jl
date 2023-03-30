@@ -1,5 +1,7 @@
 module Tetrominos
 
+export Tetromino, rotate, translate, get_cells, get_kicks
+
 using GeometryTypes
 # tetromino representation
 
@@ -50,6 +52,11 @@ for (dir, rot, newdir) in ((Up, "clockwise", Right),
     end)
 end
 
+function translate(t::T, dir::Tuple{Int, Int}) where {T <: Tetromino}
+    return T(t.origin .+ dir)
+end
+
+# TODO: Test me 
 # O tetromino
 get_cells(t::O) = (t.origin,) .+ (Point2(1, 1), Point2(1, 2), Point2(2, 1), Point2(2, 2))
 
@@ -88,5 +95,27 @@ get_cells(t::T{Up}) = (t.origin,) .+ (Point2(0, 1), Point2(1, 0), Point2(1, 1), 
 get_cells(t::T{Right}) = (t.origin,) .+ (Point2(0, 1), Point2(1, 1), Point2(1, 2), Point2(2, 1))
 get_cells(t::T{Down}) = (t.origin,) .+ (Point2(1, 0), Point2(1, 1), Point2(1, 2), Point2(2, 1))
 get_cells(t::T{Left}) = (t.origin,) .+ (Point2(0, 1), Point2(1, 0), Point2(1, 1), Point2(2, 1))
+
+# We choose to represent this as data instead of code ( like above ). Unclear at this point
+# if there's a major difference in terms of ergonomics or performance.
+# NOTE: in the documentation of the wall kicks, they use the following convention:
+#       DOCS: positive x is to the right, positive y is upwards. WE REVERSE Y and instead use:
+#       HERE: POSITIVE X IS TO THE RIGHT, POSITIVE Y IS DOWNWARDS
+# NOTE: the counterclockwise kick data is the same as the clockwise kick data for the destination
+#       orientation, but with the x and y coordinates reversed. We don't store it explicitly, but 
+#       instead just reverse the x and y coordinates when we need it.
+# TODO: Test these in the test suite - each tetromino, orientation, rotation combination (7 * 8)
+const KICK_DATA = Dict(
+    # I tetromino has special rules
+    (:I, :Up, :clockwise) => ((0, 0), (-2, 0), (1, 0), (-2, 1), (1, -2)),
+    (:I, :Right, :clockwise) => ((0, 0), (-1, 0), (2, 0), (-1, -2), (2, 1)),
+    (:I, :Down, :clockwise) => ((0, 0), (2, 0), (-1, 0), (2, -1), (-1, 2)),
+    (:I, :Left, :clockwise) => ((0, 0), (1, 0), (-2, 0), (1, 2), (-2, -1)),
+    # all other tetrominos use the same data
+    (:T, :Up, :clockwise) => ((0, 0), (-1, 0), (-1, -1), (0, 2), (-1, 2)),
+    (:T, :Right, :clockwise) => ((0, 0), (1, 0), (1, 1), (0, -2), (1, -2)),
+    (:T, :Down, :clockwise) => ((0, 0), (1, 0), (1, -1), (0, 2), (1, 2)),
+    (:T, :Left, :clockwise) => ((0, 0), (-1, 0), (-1, 1), (0, -2), (-1, -2))
+)
 
 end # module
