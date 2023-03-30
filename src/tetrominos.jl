@@ -52,8 +52,8 @@ for (dir, rot, newdir) in ((Up, "clockwise", Right),
     end)
 end
 
-function translate(t::T, dir::Tuple{Int, Int}) where {T <: Tetromino}
-    return T(t.origin .+ dir)
+function translate(t::T, dir) where {T <: Tetromino}
+    return T(t.origin + dir)
 end
 
 # TODO: Test me 
