@@ -1,7 +1,11 @@
 module Tetris
 
+using Logging
 using SimpleDirectMediaLayer
 using SimpleDirectMediaLayer.LibSDL2
+
+logger = SimpleLogger(stderr, Logging.Debug)
+global_logger(logger)
 
 # game description:
 # 1. the game is played on a 10x20 grid

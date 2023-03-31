@@ -14,6 +14,7 @@
   - [ ] Tests
 - [ ] Game Representation
   - [ ] Board, Score, Timer, ...
+  - [ ] Tests
 
 # Notes for Tetris
 We want to implement this at least partially using an ECS design.

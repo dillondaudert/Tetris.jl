@@ -15,12 +15,13 @@ mutable struct TetrisBoard
     grid::Array{Bool, 2} # grid of cells representing occupancy of the board; this includes hidden or fixed cells
     play_area::CartesianIndices{2} # the indices of the grid that denote the play area
     score::Int # the current score
+    tetromino::Union{Nothing, Tetromino} # the current active tetromino, or nothing if there is none
 end
 function TetrisBoard()
     grid = trues(42, 12) # 40 rows, 10 cols; border of fixed cells
     play_area = CartesianIndices((2:41, 2:11))
     grid[play_area] .= false
-    TetrisBoard(grid, play_area, 0)
+    TetrisBoard(grid, play_area, 0, nothing)
 end
 
 # how should we represent the board?
@@ -120,6 +121,44 @@ end
     get_next_tetromino
 
 Randomly select a tetromino.
-This function should guarantee that the player never receives more than four 'S' and 'Z' pieces in a row.
+This function should guarantee that the player never receive more than four 'S' and 'Z' pieces in a row.
 """
-function get_next_tetromino end
+function get_next_tetromino()
+    # TODO: actually implement sampling logic
+    return rand([Tetrominos.I, Tetrominos.J, Tetrominos.L, Tetrominos.O, Tetrominos.S, Tetrominos.T, Tetrominos.Z])
+end
+
+function spawn_tetromino(board::TetrisBoard)
+
+    if !isnothing(board.tetromino)
+        @debug "Tried to spawn a tetromino when there is already an active tetromino."
+        return
+    end
+    # spawn a tetromino on the board
+    # this means that the tetromino is placed at the top of the board, centered horizontally
+    # returns the active tetromino
+
+    # instantiate the next type of tetromino to be spawned
+    TetT = get_next_tetromino()
+    # instantiate the tetromino with the correct origin and orientation
+    tetromino = _spawn_tetromino(TetT)
+    board.tetromino = tetromino
+    # if this tetromino is not in a valid position, the game is over (BLOCK OUT)
+    if !is_valid_position(board, tetromino)
+        @debug "Tried to spawn a tetromino in an invalid position."
+    end
+    return
+end
+    
+
+function _spawn_tetromino(::Type{T}) where {T <: Tetromino}
+    # instantiate the tetromino with the correct origin and orientation
+    # this is a helper function for spawn_tetromino
+
+    # the grid is 42 x 12
+    # in the play area, the spawn origin is (19, 4) - 2 rows above the play area (rows 21-40)
+    # and the 4 center columns (1 2 3 [4 5 6 7] 8 9 10)
+    # since we have an extra row and column for the border, we need to add 1 to the row and column indices
+    origin = (20, 5)
+    return T{Tetrominos.Up}(origin)
+end
