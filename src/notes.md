@@ -7,13 +7,18 @@
 - [ ] Line System
 - [ ] Scoring System
 - [ ] Rendering System
+  - [ ] Coloring blocks by tetromino type
 - [ ] Tetrominos Implementation
   - [x] Representation
   - [x] Manipulation functions
   - [x] SRS and wall kicks
   - [ ] Tests
-- [ ] Game Representation
+- [ ] Game Logic / Representation
   - [ ] Board, Score, Timer, ...
+  - [ ] Random Bag Generator
+  - [x] Spawn Tetromino
+  - [ ] Lock tetromino
+  - [ ] Game over checking
   - [ ] Tests
 
 # Notes for Tetris

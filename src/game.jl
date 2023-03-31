@@ -16,12 +16,13 @@ mutable struct TetrisBoard
     play_area::CartesianIndices{2} # the indices of the grid that denote the play area
     score::Int # the current score
     tetromino::Union{Nothing, Tetromino} # the current active tetromino, or nothing if there is none
+    game_over::Bool
 end
 function TetrisBoard()
     grid = trues(42, 12) # 40 rows, 10 cols; border of fixed cells
     play_area = CartesianIndices((2:41, 2:11))
     grid[play_area] .= false
-    TetrisBoard(grid, play_area, 0, nothing)
+    TetrisBoard(grid, play_area, 0, nothing, false)
 end
 
 # how should we represent the board?
@@ -128,7 +129,7 @@ function get_next_tetromino()
     return rand([Tetrominos.I, Tetrominos.J, Tetrominos.L, Tetrominos.O, Tetrominos.S, Tetrominos.T, Tetrominos.Z])
 end
 
-function spawn_tetromino(board::TetrisBoard)
+function spawn_tetromino!(board::TetrisBoard)
 
     if !isnothing(board.tetromino)
         @debug "Tried to spawn a tetromino when there is already an active tetromino."
@@ -145,11 +146,11 @@ function spawn_tetromino(board::TetrisBoard)
     board.tetromino = tetromino
     # if this tetromino is not in a valid position, the game is over (BLOCK OUT)
     if !is_valid_position(board, tetromino)
-        @debug "Tried to spawn a tetromino in an invalid position."
+        @debug "BLOCK OUT: Tried to spawn a tetromino in an invalid position."
+        board.game_over = true
     end
     return
 end
-    
 
 function _spawn_tetromino(::Type{T}) where {T <: Tetromino}
     # instantiate the tetromino with the correct origin and orientation
@@ -161,4 +162,24 @@ function _spawn_tetromino(::Type{T}) where {T <: Tetromino}
     # since we have an extra row and column for the border, we need to add 1 to the row and column indices
     origin = (20, 5)
     return T{Tetrominos.Up}(origin)
+end
+
+"""
+    lock_tetromino
+
+Lock a tetromino in place on the board.
+"""
+function lock_tetromino!(board::TetrisBoard, tetromino)
+    # lock the tetromino in place on the board
+    # this means that all of its cells are added to the board grid
+    # and the tetromino is removed from the board
+    # returns the board with the tetromino locked in place
+
+    # add the tetromino's cells to the board grid
+    for cell in get_cells(tetromino)
+        board.grid[CartesianIndex(cell...)] = true
+    end
+    # remove the tetromino from the board
+    board.tetromino = nothing
+    return
 end
