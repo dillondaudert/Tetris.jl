@@ -20,11 +20,13 @@ global_logger(logger)
 # scoring: single line: 100 points, double line: 300 points, triple line: 500 points, tetris: 800 points
 #          back-to-back tetris: 1200 points
 
+include("utils.jl")
 include("tetrominos.jl")
 using .Tetrominos
 
 include("game.jl")
 include("engine.jl")
+include("render.jl")
 
 
 end 
