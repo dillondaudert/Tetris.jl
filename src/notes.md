@@ -1,4 +1,20 @@
 
+# TODO
+- [ ] Input System
+  - [ ] 
+- [ ] Movement System
+- [ ] Falling System
+- [ ] Line System
+- [ ] Scoring System
+- [ ] Rendering System
+- [ ] Tetrominos Implementation
+  - [x] Representation
+  - [x] Manipulation functions
+  - [x] SRS and wall kicks
+  - [ ] Tests
+- [ ] Game Representation
+  - [ ] Board, Score, Timer, ...
+
 # Notes for Tetris
 We want to implement this at least partially using an ECS design.
 

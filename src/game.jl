@@ -1,11 +1,26 @@
 # game logic functionality for tetris.
 
-# TODO: Represent the tetrominos somehow. Enum ? Struct ?
-
 ##### GAME REPRESENTATION #####
 
-struct TetrisBoard
-    grid::Array{Bool, 2} # grid of cells representing occupancy of the board
+"""
+    TetrisBoard
+
+A struct representing the state of the game board.
+    `grid` - 2D array of bools representing cell occupancy; this includes hidden or fixed cells
+    `play_area` - the indices of the grid that denote the play area
+
+Note that index (1, 1) on the board denotes the top left corner of the grid.
+"""
+mutable struct TetrisBoard
+    grid::Array{Bool, 2} # grid of cells representing occupancy of the board; this includes hidden or fixed cells
+    play_area::CartesianIndices{2} # the indices of the grid that denote the play area
+    score::Int # the current score
+end
+function TetrisBoard()
+    grid = trues(42, 12) # 40 rows, 10 cols; border of fixed cells
+    play_area = CartesianIndices((2:41, 2:11))
+    grid[play_area] .= false
+    TetrisBoard(grid, play_area, 0)
 end
 
 # how should we represent the board?
@@ -29,7 +44,7 @@ Move a tetromino in a given direction (translation) or rotate it (rotation).
 This needs to know the state of the board to determine if a move is valid, as well as
 the current position and orientation of the tetromino.
 
-This should implement the SRS (Super Rotation System) required for tetris.
+This implements the SRS (Super Rotation System) required for tetris.
 
 Given a board and a tetromino, attempt to move or rotate the tetromino. This function
 should return a new tetromino with the new position and orientation, or the old tetromino.
@@ -37,7 +52,13 @@ should return a new tetromino with the new position and orientation, or the old 
 function move_tetromino end
 
 # try to translate the tetromino; returns a new Tetromino instance with updated (or same) origin
-function move_tetromino(board::TetrisBoard, tetromino, translate) end
+function move_tetromino(board::TetrisBoard, tetromino, translation)
+    new_tetromino = translate(tetromino, translation)
+    if is_valid_position(board, new_tetromino)
+        return new_tetromino
+    end 
+    return tetromino
+end
 
 # try to rotate the tetromino; returns a new Tetromino instance with updated (or same) orientation
 function move_tetromino(board::TetrisBoard, tetromino, rot::R) where {R <: Union{Val{:clockwise}, Val{:counterclockwise}}} 
@@ -52,6 +73,48 @@ function move_tetromino(board::TetrisBoard, tetromino, rot::R) where {R <: Union
     return tetromino
 end
 
+"""
+    is_valid_position
+
+Check if a tetromino is in a valid position on the board.
+"""
+function is_valid_position(board::TetrisBoard, tetromino)
+    # check if the tetromino is in a valid position on the board
+    # this means that all of its cells are within the bounds of the board and are not occupied
+    tetro_cells = get_cells(tetromino)
+    return is_inbounds(board, tetro_cells) && !is_occupied(board, tetro_cells)
+end
+
+"""
+    is_inbounds
+
+Check if any of the cells are out of bounds.
+"""
+function is_inbounds(board::TetrisBoard, cells)
+    # check if any of the cells are out of bounds
+    # cells are Point2, play_area is the CartesianIndices of the play area
+    for cell in cells
+        if CartesianIndex(cell...) ∉ board.play_area
+            return false
+        end
+    end
+    return true
+end
+
+"""
+    is_occupied
+
+Check if any of the cells are occupied.
+"""
+function is_occupied(board::TetrisBoard, cells)
+    # note this doesn't have bounds checking, so it should be called after is_inbounds
+    for cell in cells
+        if board.grid[CartesianIndex(cell...)]
+            return true
+        end
+    end
+    return false
+end
 
 """
     get_next_tetromino

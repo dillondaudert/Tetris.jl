@@ -17,6 +17,8 @@ using SimpleDirectMediaLayer.LibSDL2
 #          back-to-back tetris: 1200 points
 
 include("tetrominos.jl")
+using .Tetrominos
+
 include("game.jl")
 include("engine.jl")
 
