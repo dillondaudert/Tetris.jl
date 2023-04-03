@@ -94,7 +94,10 @@ end
 
 function launch()
 
-    while true
+    app = GameEngine()
+    startup!(app)
+
+    while !(app.state isa QuitState)
         # run systems in order
 
         # input system - get user input
@@ -106,5 +109,9 @@ function launch()
         # score system - update score based on line clear events
         # spawn system - if there is no active tetromino, spawn a new one. if the spawn is invalid, end the game
         # render system - draw the board and the active tetromino
+
+        SDL_Delay(1000 ÷ 60)
     end
+
+    shutdown!(app)
 end
