@@ -8,6 +8,7 @@ abstract type AppState end
 # whenever we start a new game, or unpause, enter StartingState which counts down until
 # the game begins
 struct StartingState <: AppState
+    started::DateTime
     game::TetrisBoard
 end
 # represents an active game state
@@ -41,7 +42,7 @@ mutable struct GameEngine
     state::AppState
     # inner constructor that attaches the finalizer
     function GameEngine()
-        obj = new(false, false, C_NULL, C_NULL, StartingState(TetrisBoard()))
+        obj = new(false, false, C_NULL, C_NULL, StartingState(now(), TetrisBoard()))
         finalizer(obj) do self
             @async @debug "Destroying GameEngine $self; destroying SDL and TTF."
             shutdown!(self)
@@ -90,17 +91,39 @@ function shutdown!(eng::GameEngine)
     return
 end
 
+transition_state!(app::GameEngine, state::AppState) = transition_state!(app, app.state, state)
+# transition from starting to play based on time
+function transition_state!(app::GameEngine, old_state::StartingState, ::StartingState)
+    if now() - old_state.started >= Dates.Second(3)
+        app.state = PlayState(old_state.game)
+        @debug "Transitioning from $(typeof(old_state)) to $(typeof(app.state))"
+    end
+    return
+end
+# do nothing if the state is the same
+transition_state!(::GameEngine, ::S, ::S) where {S <: AppState} = nothing
+# else, change states
+function transition_state!(app::GameEngine, ::AppState, new_state::AppState)
+    app.state = new_state
+    @debug "Transitioning from $(typeof(app.state)) to $(typeof(new_state))"
+    return
+end
+
 
 
 function launch()
 
     app = GameEngine()
     startup!(app)
+    @debug "Engine starting up"
 
     while !(app.state isa QuitState)
         # run systems in order
 
         # input system - get user input
+        new_state = handle_input(app)
+
+        transition_state!(app, new_state)
         # movement system - manipulate active tetromino (can mark as inactive)
         # falling system - periodically move active tetromino down (can mark as inactive)
         # line check system - check for completed lines and clear them; 

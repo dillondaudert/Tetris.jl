@@ -1,5 +1,6 @@
 module Tetris
 
+using Dates
 using Logging
 using SimpleDirectMediaLayer
 using SimpleDirectMediaLayer.LibSDL2
@@ -26,6 +27,7 @@ using .Tetrominos
 
 include("game.jl")
 include("engine.jl")
+include("input.jl")
 include("render.jl")
 
 
