@@ -104,8 +104,8 @@ end
 transition_state!(::GameEngine, ::S, ::S) where {S <: AppState} = nothing
 # else, change states
 function transition_state!(app::GameEngine, ::AppState, new_state::AppState)
-    app.state = new_state
     @debug "Transitioning from $(typeof(app.state)) to $(typeof(new_state))"
+    app.state = new_state
     return
 end
 

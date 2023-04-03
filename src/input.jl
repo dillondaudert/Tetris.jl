@@ -30,3 +30,17 @@ handle_input(state, event, type, key) = nothing
 
 # quit from anywhere whenever we receive a QUIT event
 handle_input(::AppState, ::Val{SDL_QUIT}, _) = QuitState()
+
+# handle keyboard events - we need to pull out the scancode of the button to dispatch
+function handle_input(state::AppState, type::Val{SDL_KEYDOWN}, event)
+    scancode = event.key.keysym.scancode
+    # dispatch on state, SDL_KeyboardEvent, SDL_KEYDOWN, which key (scancode)
+    return handle_input(state, event.key, type, Val(scancode))
+end
+
+# from the pause state, either resume the game or quit
+handle_input(::PauseState, ::SDL_KeyboardEvent, ::Val{SDL_KEYDOWN}, ::Val{SDL_SCANCODE_ESCAPE}) = QuitState()
+handle_input(state::PauseState, ::SDL_KeyboardEvent, ::Val{SDL_KEYDOWN}, ::Val{SDL_SCANCODE_RETURN}) = StartingState(now(), state.game)
+
+# during gameplay, we can pause or handle player actions
+handle_input(state::PlayState, ::SDL_KeyboardEvent, ::Val{SDL_KEYDOWN}, ::Val{SDL_SCANCODE_ESCAPE}) = PauseState(state.game)
