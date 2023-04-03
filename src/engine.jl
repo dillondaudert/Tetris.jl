@@ -9,19 +9,19 @@ abstract type AppState end
 # the game begins
 struct StartingState <: AppState
     started::DateTime
-    game::TetrisBoard
+    game::TetrisGame
 end
 # represents an active game state
 struct PlayState <: AppState
-    game::TetrisBoard
+    game::TetrisGame
 end
 # pausing the game
 struct PauseState <: AppState
-    game::TetrisBoard
+    game::TetrisGame
 end
 # end of game state screen
 struct GameOverState <: AppState
-    game::TetrisBoard
+    game::TetrisGame
 end
 # the finalization state once we exit the application
 struct QuitState <: AppState end
@@ -42,7 +42,7 @@ mutable struct GameEngine
     state::AppState
     # inner constructor that attaches the finalizer
     function GameEngine()
-        obj = new(false, false, C_NULL, C_NULL, StartingState(now(), TetrisBoard()))
+        obj = new(false, false, C_NULL, C_NULL, StartingState(now(), TetrisGame()))
         finalizer(obj) do self
             @async @debug "Destroying GameEngine $self; destroying SDL and TTF."
             shutdown!(self)

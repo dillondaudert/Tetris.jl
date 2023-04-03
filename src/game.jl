@@ -11,18 +11,18 @@ A struct representing the state of the game board.
 
 Note that index (1, 1) on the board denotes the top left corner of the grid.
 """
-mutable struct TetrisBoard
+mutable struct TetrisGame
     grid::Array{Bool, 2} # grid of cells representing occupancy of the board; this includes hidden or fixed cells
     play_area::CartesianIndices{2} # the indices of the grid that denote the play area
     score::Int # the current score
     tetromino::Union{Nothing, Tetromino} # the current active tetromino, or nothing if there is none
     game_over::Bool
 end
-function TetrisBoard()
+function TetrisGame()
     grid = trues(42, 12) # 40 rows, 10 cols; border of fixed cells
     play_area = CartesianIndices((2:41, 2:11))
     grid[play_area] .= false
-    TetrisBoard(grid, play_area, 0, nothing, false)
+    TetrisGame(grid, play_area, 0, nothing, false)
 end
 
 # how should we represent the board?
@@ -54,7 +54,7 @@ should return a new tetromino with the new position and orientation, or the old 
 function move_tetromino end
 
 # try to translate the tetromino; returns a new Tetromino instance with updated (or same) origin
-function move_tetromino(board::TetrisBoard, tetromino, translation)
+function move_tetromino(board::TetrisGame, tetromino, translation)
     new_tetromino = translate(tetromino, translation)
     if is_valid_position(board, new_tetromino)
         return new_tetromino
@@ -63,7 +63,7 @@ function move_tetromino(board::TetrisBoard, tetromino, translation)
 end
 
 # try to rotate the tetromino; returns a new Tetromino instance with updated (or same) orientation
-function move_tetromino(board::TetrisBoard, tetromino, rot::R) where {R <: Union{Val{:clockwise}, Val{:counterclockwise}}} 
+function move_tetromino(board::TetrisGame, tetromino, rot::R) where {R <: Union{Val{:clockwise}, Val{:counterclockwise}}} 
     # SRS attempts to rotate using "wall kicks". 
 
     for kick in get_kicks(tetromino, rot)
@@ -80,7 +80,7 @@ end
 
 Check if a tetromino is in a valid position on the board.
 """
-function is_valid_position(board::TetrisBoard, tetromino)
+function is_valid_position(board::TetrisGame, tetromino)
     # check if the tetromino is in a valid position on the board
     # this means that all of its cells are within the bounds of the board and are not occupied
     tetro_cells = get_cells(tetromino)
@@ -92,7 +92,7 @@ end
 
 Check if any of the cells are out of bounds.
 """
-function is_inbounds(board::TetrisBoard, cells)
+function is_inbounds(board::TetrisGame, cells)
     # check if any of the cells are out of bounds
     # cells are Point2, play_area is the CartesianIndices of the play area
     for cell in cells
@@ -108,7 +108,7 @@ end
 
 Check if any of the cells are occupied.
 """
-function is_occupied(board::TetrisBoard, cells)
+function is_occupied(board::TetrisGame, cells)
     # note this doesn't have bounds checking, so it should be called after is_inbounds
     for cell in cells
         if board.grid[CartesianIndex(cell...)]
@@ -129,7 +129,7 @@ function get_next_tetromino()
     return rand([Tetrominos.I, Tetrominos.J, Tetrominos.L, Tetrominos.O, Tetrominos.S, Tetrominos.T, Tetrominos.Z])
 end
 
-function spawn_tetromino!(board::TetrisBoard)
+function spawn_tetromino!(board::TetrisGame)
 
     if !isnothing(board.tetromino)
         @debug "Tried to spawn a tetromino when there is already an active tetromino."
@@ -169,7 +169,7 @@ end
 
 Lock a tetromino in place on the board.
 """
-function lock_tetromino!(board::TetrisBoard, tetromino)
+function lock_tetromino!(board::TetrisGame, tetromino)
     # lock the tetromino in place on the board
     # this means that all of its cells are added to the board grid
     # and the tetromino is removed from the board
