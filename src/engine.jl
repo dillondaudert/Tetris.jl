@@ -115,7 +115,7 @@ function update!(app::GameEngine)
     return
 end
 # nothing to update when the game starting, paused, game over, or quitting
-function update!(::GameEngine, ::S) where {S in Union{StartingState, PauseState, GameOverState, QuitState}}
+function update!(::GameEngine, ::S) where {S <: Union{StartingState, PauseState, GameOverState, QuitState}}
     return
 end
 

@@ -87,6 +87,35 @@ function do_player_action!(game::TetrisGame, action::RotateAction)
     return
 end
 
+"""
+    do_gravity!
+
+Handle gravity for the active tetromino.
+"""
+function do_gravity!(game::TetrisGame)
+    # if there is no active tetromino, do nothing
+    if isnothing(game.tetromino)
+        return
+    end
+    # attempt to shift the tetromino downwards
+    new_tetromino = move_tetromino(game, game.tetromino, Vec2(1, 0))
+    # if the tetromino cannot be shifted downwards, increment lock delay or lock
+    if new_tetromino == game.tetromino
+        # lock delay
+        game.lock_delay += 1
+        if game.lock_delay >= 30
+            # lock tetromino
+            lock_tetromino!(game, game.tetromino)
+        end
+    else
+        # successfully shift downwards
+        game.lock_delay = 0
+        game.tetromino = new_tetromino
+    end
+    return
+end
+
+
 
 """
     move_tetromino
