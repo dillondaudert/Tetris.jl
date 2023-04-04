@@ -119,7 +119,7 @@ function update!(::GameEngine, ::S) where {S <: Union{StartingState, PauseState,
     return
 end
 
-function update!(::GameEngine, play::PlayState)
+function update!(app::GameEngine, play::PlayState)
     # update game
     update!(play.game)
     # if the game is over, transition to game over state
@@ -156,6 +156,7 @@ function launch()
         # score system - update score based on line clear events
         # spawn system - if there is no active tetromino, spawn a new one. if the spawn is invalid, end the game
         # render system - draw the board and the active tetromino
+        render(app)
 
         SDL_Delay(1000 ÷ 60)
     end

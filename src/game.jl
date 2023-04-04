@@ -115,6 +115,12 @@ function do_gravity!(game::TetrisGame)
     return
 end
 
+function do_line_clear!(game::TetrisGame)
+    # check for completed lines and clear them
+    # TODO
+    return
+end
+
 
 
 """
