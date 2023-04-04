@@ -133,7 +133,28 @@ end
 
 function do_line_clear!(game::TetrisGame)
     # check for completed lines and clear them
-    # TODO
+    num_cleared = 0
+    # iterate over the rows of the play area
+    # for any row that has all cells occupied, clear it
+    # then shift all rows above it downwards
+    for row in 21:40
+        if all(game.grid[game.play_area[row, :]])
+            # clear the row
+            game.grid[game.play_area[row, :]] .= false
+            # move every row above it one down
+            for row_above in (row-1):-1:21
+                # set each row's values to the row above it's values
+                game.grid[game.play_area[row_above+1, :]] .= game.grid[game.play_area[row_above, :]]
+                # the clear the row above
+                game.grid[game.play_area[row_above, :]] .= false
+            end
+            num_cleared += 1
+        end
+    end
+    # update the score
+    # scoring is based on the number of lines cleared at once; move this out of here if needed
+    score_vals = (100, 300, 500, 800) .* game.level
+    num_cleared > 0 && (game.score += score_vals[num_cleared]; @info "Score now $(game.score)")
     return
 end
 
