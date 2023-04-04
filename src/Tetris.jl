@@ -1,6 +1,7 @@
 module Tetris
 
 using Dates
+using GeometryTypes
 using Logging
 using SimpleDirectMediaLayer
 using SimpleDirectMediaLayer.LibSDL2

@@ -183,3 +183,30 @@ function lock_tetromino!(board::TetrisGame, tetromino)
     board.tetromino = nothing
     return
 end
+
+function drop_tetromino(game::TetrisGame, tetromino::Tetromino)
+    # drop the tetromino as far as it can go
+    # this means that the tetromino is translated down until it is in an invalid position
+    # returns the tetromino with the new origin
+
+    new_tetromino = translate(tetromino, Vec2((0, 1)))
+    while is_valid_position(game, new_tetromino)
+        tetromino = new_tetromino
+        new_tetromino = translate(tetromino, Vec2((0, 1)))
+    end
+    return tetromino
+end
+
+
+function get_shadow(game::TetrisGame)
+    # get the shadow of the active tetromino
+    # this is the position where the tetromino would fall if it were dropped
+    # returns a tetromino with the same type as the active tetromino, but with the shadow origin
+
+    if isnothing(game.tetromino)
+        return nothing
+    end
+
+    shadow_tetromino = drop_tetromino(game, game.tetromino)
+    return shadow_tetromino
+end
