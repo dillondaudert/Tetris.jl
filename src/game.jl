@@ -1,5 +1,15 @@
 # game logic functionality for tetris.
 
+##### PLAYER ACTIONS #####
+
+abstract type PlayerAction end
+struct TranslateAction <: PlayerAction
+    dir::Vec2{Int}
+end
+struct RotateAction <: PlayerAction
+    rot::Symbol
+end
+
 ##### GAME REPRESENTATION #####
 
 """
@@ -17,19 +27,23 @@ mutable struct TetrisGame
     score::Int # the current score
     tetromino::Union{Nothing, Tetromino} # the current active tetromino, or nothing if there is none
     game_over::Bool
+    player_action::Union{Nothing, PlayerAction}
+    lock_delay::Int
 end
 function TetrisGame()
     grid = trues(42, 12) # 40 rows, 10 cols; border of fixed cells
     play_area = CartesianIndices((2:41, 2:11))
     grid[play_area] .= false
-    TetrisGame(grid, play_area, 0, nothing, false)
+    TetrisGame(grid, play_area, 0, nothing, false, nothing, 0)
 end
+
+##### GAMEPLAY LOGIC #####
 
 function update!(game::TetrisGame)
     # update 1 frame of the game
     
     # player manipulates active tetromino
-    do_player_movement!(game)
+    do_player_action!(game, game.player_action)
     # gravity / falling
     do_gravity!(game)
     # check for completed lines and clear them
@@ -38,19 +52,41 @@ function update!(game::TetrisGame)
     spawn_tetromino!(game)
 end
 
-# how should we represent the board?
-# we have two seemingly different kinds of "objects": tetrominos, which have a position and orientation, and the board
-# which has a grid of cells that can be empty or occupied by a (potentially partial) tetromino.
-# Clearly, both of these things are made up of cells. The tetrominos need to move their cells together, but once they
-#     are locked in place, their individual cells can be treated as separate (since they can be removed from the board
-#     one by one). 
+"""
+    do_player_action!
 
-# when a tetromino is spawned, it creates 4 associated cells in a particular configuration (with other data like color).
-#    when the tetromino moves, it moves all of its cells together. when it is locked in place, it is no longer
-#    associated with the tetromino, and can be treated as separate cells.
+Handle player input to move or rotate the active tetromino.
+"""
+do_player_action!(::TetrisGame, ::Nothing) = nothing
 
+function do_player_action!(game::TetrisGame, action::TranslateAction)
+    game.player_action = nothing
+    # shift the active tetromino in a given direction
+    if isnothing(game.tetromino)
+        return
+    end
+    # attempt to shift the tetromino
+    new_tetromino = move_tetromino(game, game.tetromino, action.dir)
+    # if attempting to shift downwards, lock the tetromino if it cannot be shifted
+    if action.dir == Vec2(1, 0) && new_tetromino == game.tetromino
+        # lock tetromino
+        lock_tetromino!(game, game.tetromino)
+    end
+    game.tetromino = new_tetromino
+    return
+end
 
-##### GAMEPLAY LOGIC #####
+function do_player_action!(game::TetrisGame, action::RotateAction)
+    game.player_action = nothing
+    # rotate the active tetromino in a given direction
+    if isnothing(game.tetromino)
+        return
+    end
+    # attempt to rotate the tetromino
+    game.tetromino = move_tetromino(game, game.tetromino, Val(action.rot))
+    return
+end
+
 
 """
     move_tetromino
@@ -67,7 +103,7 @@ should return a new tetromino with the new position and orientation, or the old 
 function move_tetromino end
 
 # try to translate the tetromino; returns a new Tetromino instance with updated (or same) origin
-function move_tetromino(board::TetrisGame, tetromino, translation)
+function move_tetromino(board::TetrisGame, tetromino::Tetromino, translation::Vec2{Int})
     new_tetromino = translate(tetromino, translation)
     if is_valid_position(board, new_tetromino)
         return new_tetromino
@@ -76,7 +112,7 @@ function move_tetromino(board::TetrisGame, tetromino, translation)
 end
 
 # try to rotate the tetromino; returns a new Tetromino instance with updated (or same) orientation
-function move_tetromino(board::TetrisGame, tetromino, rot::R) where {R <: Union{Val{:clockwise}, Val{:counterclockwise}}} 
+function move_tetromino(board::TetrisGame, tetromino::Tetromino, rot::R) where {R <: Union{Val{:clockwise}, Val{:counterclockwise}}} 
     # SRS attempts to rotate using "wall kicks". 
 
     for kick in get_kicks(tetromino, rot)
@@ -156,6 +192,7 @@ function spawn_tetromino!(board::TetrisGame)
     # instantiate the tetromino with the correct origin and orientation
     tetromino = _spawn_tetromino(TetT)
     board.tetromino = tetromino
+    @info "Spawning a new tetromino: $(board.tetromino)"
 
     # if the active tetromino is not in a valid position, the game is over (BLOCK OUT)
     if !is_valid_position(board, tetromino)
@@ -195,7 +232,7 @@ function lock_tetromino!(board::TetrisGame, tetromino)
     board.tetromino = nothing
 
     # if this tetromino was locked completely above the visible play area, the game is over (LOCK OUT)
-    if all(cell[1] < 22 for cell in get_cells(tetromino))
+    if all(getindex.(get_cells(tetromino), 1) .< 22)
         @debug "LOCK OUT: Tried to lock a tetromino completely above the visible play area."
         board.game_over = true
     end
