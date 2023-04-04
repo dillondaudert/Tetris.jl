@@ -62,6 +62,20 @@ function _render(renderer, state::PlayState)
             SDL_RenderFillRectF(renderer, cell_rect)
         end
     end
+
+    # now render the active tetromino
+    if !isnothing(state.game.tetromino)
+        # tetromino colors
+        SDL_SetRenderDrawColor(renderer, get_tetromino_color(state.game.tetromino)...)
+        # render the tetromino
+        for (row, col) in get_cells(state.game.tetromino)
+            # draw the cells making up this tetromino
+            orig_x = (col-1) * outer_width + PAD
+            orig_y = (row-1) * outer_height + PAD
+            cell_rect = Ref(SDL_FRect(orig_x, orig_y, inner_width, inner_height))
+            SDL_RenderFillRectF(renderer, cell_rect)
+        end
+    end
     return
 end
 
@@ -78,3 +92,11 @@ function _render(renderer, state::GameOverState)
 end
 
 _render(renderer, state::QuitState) = nothing
+
+get_tetromino_color(::Tetrominos.I) = (0, 255, 255, 255) # cyan
+get_tetromino_color(::Tetrominos.O) = (255, 255, 0, 255) # yellow
+get_tetromino_color(::Tetrominos.T) = (128, 0, 128, 255) # purple
+get_tetromino_color(::Tetrominos.S) = (0, 255, 0, 255)   # green
+get_tetromino_color(::Tetrominos.Z) = (255, 0, 0, 255)   # red
+get_tetromino_color(::Tetrominos.J) = (0, 0, 255, 255)   # blue
+get_tetromino_color(::Tetrominos.L) = (255, 127, 0, 255) # orange
