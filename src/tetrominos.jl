@@ -73,7 +73,7 @@ get_cells(t::J{Down}) = (t.origin,) .+ (Point2(1, 0), Point2(1, 1), Point2(1, 2)
 get_cells(t::J{Left}) = (t.origin,) .+ (Point2(0, 1), Point2(1, 1), Point2(2, 1), Point2(2, 0))
 
 # L tetromino
-get_cells(t::L{Up}) = (t.origin,) .+ (Point2(1, 0), Point2(1, 1), Point2(1, 2), Point2(2, 0))
+get_cells(t::L{Up}) = (t.origin,) .+ (Point2(1, 0), Point2(1, 1), Point2(1, 2), Point2(0, 2))
 get_cells(t::L{Right}) = (t.origin,) .+ (Point2(0, 1), Point2(1, 1), Point2(2, 1), Point2(2, 2))
 get_cells(t::L{Down}) = (t.origin,) .+ (Point2(1, 0), Point2(1, 1), Point2(1, 2), Point2(2, 0))
 get_cells(t::L{Left}) = (t.origin,) .+ (Point2(0, 0), Point2(0, 1), Point2(1, 1), Point2(2, 1))
