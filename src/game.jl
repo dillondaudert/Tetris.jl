@@ -29,12 +29,14 @@ mutable struct TetrisGame
     game_over::Bool
     player_action::Union{Nothing, PlayerAction}
     lock_delay::Int
+    gravity::Rational{Int} # the gravity of the game, in cells over frames
+    gravity_delay::Int # the number of frames since the last gravity update
 end
 function TetrisGame()
     grid = trues(42, 12) # 40 rows, 10 cols; border of fixed cells
     play_area = CartesianIndices((2:41, 2:11))
     grid[play_area] .= false
-    TetrisGame(grid, play_area, 0, nothing, false, nothing, 0)
+    TetrisGame(grid, play_area, 0, nothing, false, nothing, 0, 1//30, 0)
 end
 
 ##### GAMEPLAY LOGIC #####
@@ -97,8 +99,10 @@ function do_gravity!(game::TetrisGame)
     if isnothing(game.tetromino)
         return
     end
+    
     # attempt to shift the tetromino downwards
-    new_tetromino = move_tetromino(game, game.tetromino, Vec2(1, 0))
+    down_shift = Vec2(numerator(game.gravity), 0)
+    new_tetromino = move_tetromino(game, game.tetromino, down_shift)
     # if the tetromino cannot be shifted downwards, increment lock delay or lock
     if new_tetromino == game.tetromino
         # lock delay
@@ -108,6 +112,13 @@ function do_gravity!(game::TetrisGame)
             lock_tetromino!(game, game.tetromino)
         end
     else
+        # increment gravity delay
+        game.gravity_delay += 1
+        if denominator(game.gravity) > game.gravity_delay
+            # wait a number of frames equal to the denominator
+            return
+        end
+        game.gravity_delay = 0
         # successfully shift downwards
         game.lock_delay = 0
         game.tetromino = new_tetromino
