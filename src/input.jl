@@ -44,3 +44,6 @@ handle_input(state::PauseState, ::SDL_KeyboardEvent, ::Val{SDL_KEYDOWN}, ::Val{S
 
 # during gameplay, we can pause or handle player actions
 handle_input(state::PlayState, ::SDL_KeyboardEvent, ::Val{SDL_KEYDOWN}, ::Val{SDL_SCANCODE_ESCAPE}) = PauseState(state.game)
+handle_input(state::PlayState, ::SDL_KeyboardEvent, ::Val{SDL_KEYDOWN}, ::Val{SDL_SCANCODE_LEFT}) = (state.game.player_action = TranslateAction((0, -1)); state)
+handle_input(state::PlayState, ::SDL_KeyboardEvent, ::Val{SDL_KEYDOWN}, ::Val{SDL_SCANCODE_RIGHT}) = (state.game.player_action = TranslateAction((0, 1)); state)
+handle_input(state::PlayState, ::SDL_KeyboardEvent, ::Val{SDL_KEYDOWN}, ::Val{SDL_SCANCODE_UP}) = (state.game.player_action = RotateAction(:clockwise); state)
