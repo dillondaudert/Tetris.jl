@@ -109,6 +109,27 @@ function transition_state!(app::GameEngine, ::AppState, new_state::AppState)
     return
 end
 
+# app update
+function update!(app::GameEngine)
+    update!(app, app.state)
+    return
+end
+# nothing to update when the game starting, paused, game over, or quitting
+function update!(::GameEngine, ::S) where {S in Union{StartingState, PauseState, GameOverState, QuitState}}
+    return
+end
+
+function update!(::GameEngine, play::PlayState)
+    # update game
+    update!(play.game)
+    # if the game is over, transition to game over state
+    if play.game.game_over
+        transition_state!(app, play, GameOverState(play.game))
+    end
+    return
+end
+
+
 
 
 function launch()
@@ -124,6 +145,9 @@ function launch()
         new_state = handle_input(app)
 
         transition_state!(app, new_state)
+
+        # update game 1 frame
+        update!(app)
         # movement system - manipulate active tetromino (can mark as inactive)
         # falling system - periodically move active tetromino down (can mark as inactive)
         # line check system - check for completed lines and clear them; 

@@ -25,6 +25,19 @@ function TetrisGame()
     TetrisGame(grid, play_area, 0, nothing, false)
 end
 
+function update!(game::TetrisGame)
+    # update 1 frame of the game
+    
+    # player manipulates active tetromino
+    do_player_movement!(game)
+    # gravity / falling
+    do_gravity!(game)
+    # check for completed lines and clear them
+    do_line_clear!(game)
+    # if there is no active tetromino, spawn a new one
+    spawn_tetromino!(game)
+end
+
 # how should we represent the board?
 # we have two seemingly different kinds of "objects": tetrominos, which have a position and orientation, and the board
 # which has a grid of cells that can be empty or occupied by a (potentially partial) tetromino.
@@ -132,7 +145,6 @@ end
 function spawn_tetromino!(board::TetrisGame)
 
     if !isnothing(board.tetromino)
-        @debug "Tried to spawn a tetromino when there is already an active tetromino."
         return
     end
     # spawn a tetromino on the board
@@ -144,7 +156,8 @@ function spawn_tetromino!(board::TetrisGame)
     # instantiate the tetromino with the correct origin and orientation
     tetromino = _spawn_tetromino(TetT)
     board.tetromino = tetromino
-    # if this tetromino is not in a valid position, the game is over (BLOCK OUT)
+
+    # if the active tetromino is not in a valid position, the game is over (BLOCK OUT)
     if !is_valid_position(board, tetromino)
         @debug "BLOCK OUT: Tried to spawn a tetromino in an invalid position."
         board.game_over = true
@@ -173,7 +186,6 @@ function lock_tetromino!(board::TetrisGame, tetromino)
     # lock the tetromino in place on the board
     # this means that all of its cells are added to the board grid
     # and the tetromino is removed from the board
-    # returns the board with the tetromino locked in place
 
     # add the tetromino's cells to the board grid
     for cell in get_cells(tetromino)
@@ -181,6 +193,12 @@ function lock_tetromino!(board::TetrisGame, tetromino)
     end
     # remove the tetromino from the board
     board.tetromino = nothing
+
+    # if this tetromino was locked completely above the visible play area, the game is over (LOCK OUT)
+    if all(cell[1] < 22 for cell in get_cells(tetromino))
+        @debug "LOCK OUT: Tried to lock a tetromino completely above the visible play area."
+        board.game_over = true
+    end
     return
 end
 
