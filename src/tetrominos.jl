@@ -99,23 +99,23 @@ get_cells(t::T{Left}) = (t.origin,) .+ (Point2(0, 1), Point2(1, 0), Point2(1, 1)
 # We choose to represent this as data instead of code ( like above ). Unclear at this point
 # if there's a major difference in terms of ergonomics or performance.
 # NOTE: in the documentation of the wall kicks, they use the following convention:
-#       DOCS: positive x is to the right, positive y is upwards. WE REVERSE Y and instead use:
-#       HERE: POSITIVE X IS TO THE RIGHT, POSITIVE Y IS DOWNWARDS
+#       DOCS: (1, 2) translates 1 right, 2 up. We instead use:
+#       HERE: (1, 2) translates 1 down, 2 right (like row, col)
 # NOTE: the counterclockwise kick data is the same as the clockwise kick data for the destination
 #       orientation, but with the x and y coordinates reversed. We don't store it explicitly, but 
 #       instead just reverse the x and y coordinates when we need it.
 # TODO: Test these in the test suite - each tetromino, orientation, rotation combination (7 * 8)
 const KICK_DATA = Dict(
     # I tetromino has special rules
-    (:I, Up, :clockwise) => Vec2.(((0, 0), (-2, 0), (1, 0), (-2, 1), (1, -2))),
-    (:I, Right, :clockwise) => Vec2.(((0, 0), (-1, 0), (2, 0), (-1, -2), (2, 1))),
-    (:I, Down, :clockwise) => Vec2.(((0, 0), (2, 0), (-1, 0), (2, -1), (-1, 2))),
-    (:I, Left, :clockwise) => Vec2.(((0, 0), (1, 0), (-2, 0), (1, 2), (-2, -1))),
+    (:I, Up, :clockwise) => Vec2.(((0, 0), (0, -2), (0, 1), (1, -2), (-2, 1))),
+    (:I, Right, :clockwise) => Vec2.(((0, 0), (0. -1), (0, 2), (-2, -1), (1, 2))),
+    (:I, Down, :clockwise) => Vec2.(((0, 0), (0, 2), (0, -1), (-1, 2), (2, -1))),
+    (:I, Left, :clockwise) => Vec2.(((0, 0), (0, 1), (0, -2), (2, 1), (-1, -2))),
     # all other tetrominos use the same data
-    (:T, Up, :clockwise) => Vec2.(((0, 0), (-1, 0), (-1, -1), (0, 2), (-1, 2))),
-    (:T, Right, :clockwise) => Vec2.(((0, 0), (1, 0), (1, 1), (0, -2), (1, -2))),
-    (:T, Down, :clockwise) => Vec2.(((0, 0), (1, 0), (1, -1), (0, 2), (1, 2))),
-    (:T, Left, :clockwise) => Vec2.(((0, 0), (-1, 0), (-1, 1), (0, -2), (-1, -2)))
+    (:T, Up, :clockwise) => Vec2.(((0, 0), (0, -1), (-1, -1), (2, 0), (2, -1))),
+    (:T, Right, :clockwise) => Vec2.(((0, 0), (0, 1), (1, 1), (-2, 0), (-2, 1))),
+    (:T, Down, :clockwise) => Vec2.(((0, 0), (0, 1), (-1, 1), (2, 0), (2, 1))),
+    (:T, Left, :clockwise) => Vec2.(((0, 0), (0, -1), (1, -1), (-2, 0), (-2, -1)))
 )
 
 # helper functions for orientations
