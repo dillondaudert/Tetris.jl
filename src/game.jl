@@ -24,6 +24,7 @@ Note that index (1, 1) on the board denotes the top left corner of the grid.
 mutable struct TetrisGame
     grid::Array{Bool, 2} # grid of cells representing occupancy of the board; this includes hidden or fixed cells
     play_area::CartesianIndices{2} # the indices of the grid that denote the play area
+    level::Int # difficulty level
     score::Int # the current score
     tetromino::Union{Nothing, Tetromino} # the current active tetromino, or nothing if there is none
     game_over::Bool
@@ -36,7 +37,7 @@ function TetrisGame()
     grid = trues(42, 12) # 40 rows, 10 cols; border of fixed cells
     play_area = CartesianIndices((2:41, 2:11))
     grid[play_area] .= false
-    TetrisGame(grid, play_area, 0, nothing, false, nothing, 0, 1//30, 0)
+    TetrisGame(grid, play_area, 1, 0, nothing, false, nothing, 0, 1//30, 0)
 end
 
 ##### GAMEPLAY LOGIC #####
@@ -70,9 +71,13 @@ function do_player_action!(game::TetrisGame, action::TranslateAction)
     # attempt to shift the tetromino
     new_tetromino = move_tetromino(game, game.tetromino, action.dir)
     # if attempting to shift downwards, lock the tetromino if it cannot be shifted
-    if action.dir == Vec2(1, 0) && new_tetromino == game.tetromino
-        # lock tetromino
-        lock_tetromino!(game, game.tetromino)
+    if action.dir == Vec2(1, 0)
+        # reset the gravity delay
+        game.gravity_delay = 0
+        if new_tetromino == game.tetromino
+            # lock tetromino
+            lock_tetromino!(game, game.tetromino)
+        end
     end
     game.tetromino = new_tetromino
     return
