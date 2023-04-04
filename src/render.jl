@@ -39,7 +39,7 @@ function _render(renderer, state::PlayState)
     # according to their standard colors.
     W, H = get_renderer_size(renderer)
 
-    PAD = 2 # padding between cells
+    PAD = 1 # padding between cells
     # grid sizing
     outer_height = H / size(state.game.grid, 1)
     outer_width = W / size(state.game.grid, 2)
@@ -50,11 +50,8 @@ function _render(renderer, state::PlayState)
     for index in CartesianIndices(state.game.grid)
         row, col = index.I
         # draw the bounding rectangle
-        SDL_SetRenderDrawColor(renderer, 100, 100, 100, 100)
         orig_x = (col-1) * outer_width
         orig_y = (row-1) * outer_height
-        rect = Ref(SDL_FRect(orig_x, orig_y, outer_width, outer_height))
-        SDL_RenderDrawRectF(renderer, rect)
         # if cell occupied, draw and fill the inner rectangle
         if state.game.grid[index]
             SDL_SetRenderDrawColor(renderer, 200, 200, 200, 200)
@@ -63,7 +60,7 @@ function _render(renderer, state::PlayState)
         end
     end
 
-    # now render the active tetromino
+    # now render the active tetromino and ghost tetromino
     if !isnothing(state.game.tetromino)
         # tetromino colors
         SDL_SetRenderDrawColor(renderer, get_tetromino_color(state.game.tetromino)...)
@@ -74,6 +71,16 @@ function _render(renderer, state::PlayState)
             orig_y = (row-1) * outer_height + PAD
             cell_rect = Ref(SDL_FRect(orig_x, orig_y, inner_width, inner_height))
             SDL_RenderFillRectF(renderer, cell_rect)
+        end
+        # render the ghost tetromino
+        # this won't be nothing since we checked that state.game.tetromino isn't nothing already
+        ghost_tetromino = get_shadow(state.game)
+        for (row, col) in get_cells(ghost_tetromino)
+            # draw the outline of cells making up this tetromino
+            shad_x = (col-1) * outer_width + PAD
+            shad_y = (row-1) * outer_height + PAD
+            shad_rect = Ref(SDL_FRect(shad_x, shad_y, inner_width, inner_height))
+            SDL_RenderDrawRectF(renderer, shad_rect)
         end
     end
     return

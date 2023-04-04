@@ -290,10 +290,10 @@ function drop_tetromino(game::TetrisGame, tetromino::Tetromino)
     # this means that the tetromino is translated down until it is in an invalid position
     # returns the tetromino with the new origin
 
-    new_tetromino = translate(tetromino, Vec2((0, 1)))
+    new_tetromino = translate(tetromino, Vec2((1, 0)))
     while is_valid_position(game, new_tetromino)
         tetromino = new_tetromino
-        new_tetromino = translate(tetromino, Vec2((0, 1)))
+        new_tetromino = translate(tetromino, Vec2((1, 0)))
     end
     return tetromino
 end

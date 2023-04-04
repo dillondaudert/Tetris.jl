@@ -47,3 +47,4 @@ handle_input(state::PlayState, ::SDL_KeyboardEvent, ::Val{SDL_KEYDOWN}, ::Val{SD
 handle_input(state::PlayState, ::SDL_KeyboardEvent, ::Val{SDL_KEYDOWN}, ::Val{SDL_SCANCODE_LEFT}) = (state.game.player_action = TranslateAction((0, -1)); state)
 handle_input(state::PlayState, ::SDL_KeyboardEvent, ::Val{SDL_KEYDOWN}, ::Val{SDL_SCANCODE_RIGHT}) = (state.game.player_action = TranslateAction((0, 1)); state)
 handle_input(state::PlayState, ::SDL_KeyboardEvent, ::Val{SDL_KEYDOWN}, ::Val{SDL_SCANCODE_UP}) = (state.game.player_action = RotateAction(:clockwise); state)
+handle_input(state::PlayState, ::SDL_KeyboardEvent, ::Val{SDL_KEYDOWN}, ::Val{SDL_SCANCODE_DOWN}) = (state.game.player_action = TranslateAction((1, 0)); state)
