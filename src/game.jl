@@ -10,6 +10,52 @@ struct RotateAction <: PlayerAction
     rot::Symbol
 end
 
+##### Random Tetromino Generator #####
+# a struct for a stateful random tetromino generator
+# this follows the Random Generator Algorithm from the Tetris Guideline
+# https://tetris.fandom.com/wiki/Random_Generator
+# this essentially iterates through a permutation of the 7 tetrominos
+# with the added constraint that no more than 4 'S' or 'Z' pieces can be in a row
+mutable struct RandomGeneratorTetris
+    tetrominos
+    index::Int
+    function RandomGeneratorTetris()
+        # initialize the tetrominos in a random order
+        tetrominos = shuffle([Tetrominos.I, Tetrominos.J, Tetrominos.L, Tetrominos.O, Tetrominos.S, Tetrominos.T, Tetrominos.Z])
+        new(tetrominos, 1)
+    end
+end
+
+function Base.iterate(rng::RandomGeneratorTetris)
+    # any time we iterate, we return the next tetromino in the sequence
+    # if we've exhausted this sequence, generate a new one (ensuring the snake rule constraints)
+    # and return the first tetromino
+    if rng.index > 7
+        # count S/Z at end of current sequence
+        num_s_z_end = sum(rng.tetrominos[6:7] .∈ ([Tetrominos.S, Tetrominos.Z],))
+        # generate a new sequence
+        shuffle!(rng.tetrominos)
+        # count S/Z at beginning of new sequence
+        while num_s_z_end + sum(rng.tetrominos[1:2] .∈ ([Tetrominos.S, Tetrominos.Z],)) == 4
+            shuffle!(rng.tetrominos)
+        end
+        rng.index = 1
+    end
+
+    # return the next tetromino in the sequence
+    tetromino = rng.tetrominos[rng.index]
+    rng.index += 1
+    return (tetromino, nothing)
+end
+
+function Base.iterate(rng::RandomGeneratorTetris, state)
+    return iterate(rng)
+end
+
+function Base.IteratorSize(::Type{RandomGeneratorTetris})
+    return Base.IsInfinite()
+end
+
 ##### GAME REPRESENTATION #####
 
 """
@@ -32,12 +78,13 @@ mutable struct TetrisGame
     lock_delay::Int
     gravity::Rational{Int} # the gravity of the game, in cells over frames
     gravity_delay::Int # the number of frames since the last gravity update
+    rng::RandomGeneratorTetris # the random number generator for the game
 end
 function TetrisGame()
     grid = trues(42, 12) # 40 rows, 10 cols; border of fixed cells
     play_area = CartesianIndices((2:41, 2:11))
     grid[play_area] .= false
-    TetrisGame(grid, play_area, 1, 0, nothing, false, nothing, 0, 1//30, 0)
+    TetrisGame(grid, play_area, 1, 0, nothing, false, nothing, 0, 1//30, 0, RandomGeneratorTetris())
 end
 
 ##### GAMEPLAY LOGIC #####
@@ -239,17 +286,6 @@ function is_occupied(board::TetrisGame, cells)
     return false
 end
 
-"""
-    get_next_tetromino
-
-Randomly select a tetromino.
-This function should guarantee that the player never receive more than four 'S' and 'Z' pieces in a row.
-"""
-function get_next_tetromino()
-    # TODO: actually implement sampling logic
-    return rand([Tetrominos.I, Tetrominos.J, Tetrominos.L, Tetrominos.O, Tetrominos.S, Tetrominos.T, Tetrominos.Z])
-end
-
 function spawn_tetromino!(board::TetrisGame)
 
     if !isnothing(board.tetromino)
@@ -260,7 +296,7 @@ function spawn_tetromino!(board::TetrisGame)
     # returns the active tetromino
 
     # instantiate the next type of tetromino to be spawned
-    TetT = get_next_tetromino()
+    TetT, _ = iterate(board.rng)
     # instantiate the tetromino with the correct origin and orientation
     tetromino = _spawn_tetromino(TetT)
     board.tetromino = tetromino
