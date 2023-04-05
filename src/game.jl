@@ -124,6 +124,7 @@ function do_player_action!(game::TetrisGame, action::TranslateAction)
         if new_tetromino == game.tetromino
             # lock tetromino
             lock_tetromino!(game, game.tetromino)
+            return
         end
     end
     game.tetromino = new_tetromino
