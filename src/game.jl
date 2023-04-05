@@ -301,7 +301,7 @@ function spawn_tetromino!(board::TetrisGame)
     # instantiate the tetromino with the correct origin and orientation
     tetromino = _spawn_tetromino(TetT)
     board.tetromino = tetromino
-    @info "Spawning a new tetromino: $(board.tetromino)"
+    @debug "Spawning a new tetromino: $(board.tetromino)"
 
     # if the active tetromino is not in a valid position, the game is over (BLOCK OUT)
     if !is_valid_position(board, tetromino)
