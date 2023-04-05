@@ -39,33 +39,43 @@ function _render(renderer, state::PlayState)
     # according to their standard colors.
     W, H = get_renderer_size(renderer)
 
+    visible_area = CartesianIndices((22:42, 1:12))
+    visible_grid = @view state.game.grid[visible_area]
+
     PAD = 1 # padding between cells
     # grid sizing
-    outer_height = H / size(state.game.grid, 1)
-    outer_width = W / size(state.game.grid, 2)
+    outer_height = H / size(visible_grid, 1)
+    outer_width = W / size(visible_grid, 2)
     inner_height = outer_height - 2*PAD
     inner_width = outer_width - 2*PAD
     
     # render the grid
-    for index in CartesianIndices(state.game.grid)
+    for index in CartesianIndices(visible_grid)
         row, col = index.I
         # draw the bounding rectangle
         orig_x = (col-1) * outer_width
         orig_y = (row-1) * outer_height
         # if cell occupied, draw and fill the inner rectangle
-        if state.game.grid[index]
+        if visible_grid[index]
             SDL_SetRenderDrawColor(renderer, 200, 200, 200, 200)
             cell_rect = Ref(SDL_FRect(orig_x + PAD, orig_y + PAD, inner_width, inner_height))
             SDL_RenderFillRectF(renderer, cell_rect)
         end
     end
 
+    # the visible area is smaller than the game grid, so we need to offset the row/col 
+    # indices by the difference
+    row_offset = size(state.game.grid, 1) - size(visible_grid, 1)
+
     # now render the active tetromino and ghost tetromino
     if !isnothing(state.game.tetromino)
         # tetromino colors
         SDL_SetRenderDrawColor(renderer, get_tetromino_color(state.game.tetromino)...)
         # render the tetromino
-        for (row, col) in get_cells(state.game.tetromino)
+        for (_row, col) in get_cells(state.game.tetromino)
+            # offset row by the difference between the visible area and the game grid
+            row = _row - row_offset
+            row > 0 || continue # skip if row is out of bounds
             # draw the cells making up this tetromino
             orig_x = (col-1) * outer_width + PAD
             orig_y = (row-1) * outer_height + PAD
@@ -75,7 +85,9 @@ function _render(renderer, state::PlayState)
         # render the ghost tetromino
         # this won't be nothing since we checked that state.game.tetromino isn't nothing already
         ghost_tetromino = get_shadow(state.game)
-        for (row, col) in get_cells(ghost_tetromino)
+        for (_row, col) in get_cells(ghost_tetromino)
+            row = _row - row_offset
+            row > 0 || continue # skip if row is out of bounds
             # draw the outline of cells making up this tetromino
             shad_x = (col-1) * outer_width + PAD
             shad_y = (row-1) * outer_height + PAD

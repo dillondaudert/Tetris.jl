@@ -62,7 +62,7 @@ function startup!(eng::GameEngine)
     @sdl_assert TTF_Init() res -> res == 0
     eng.ttf_initialized = true
     # create window and renderer
-    WIN_WIDTH, WIN_HEIGHT = 500, 1000
+    WIN_WIDTH, WIN_HEIGHT = 571, 1000
     eng.window = @sdl_assert SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIN_WIDTH, WIN_HEIGHT, SDL_WINDOW_SHOWN) res -> res != C_NULL
     eng.renderer = @sdl_assert SDL_CreateRenderer(eng.window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC) res -> res != C_NULL
     return
